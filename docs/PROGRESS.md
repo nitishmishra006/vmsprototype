@@ -105,6 +105,24 @@ verified to fail with the original `OperationalError` when the call is removed,
 and the full `cp .env.example .env && alembic upgrade head` sequence was re-run
 against a clean tree with no `data/` directory.
 
+### Acceptance (all passed on the target laptop, 2026-09-24)
+
+1. `pytest -q` -> 87 passed in 1.09 s.
+2. `uvicorn app.main:app --port 8000` starts; `/api/health` and `/api/setup-status`
+   return correct JSON; `/docs` loads. All log lines are JSON, uvicorn's included.
+3. `npm run dev -- --port 3000` serves the three-page app; the Settings checklist
+   reflects this laptop (webcam ok at 1920x1080; detector weights, Ollama and the
+   three HF models correctly reported missing, each with its fix command).
+4. A threshold changed in Settings persists across a backend restart, and
+   "Reset to .env" restores the `.env` value.
+5. `/api/metrics` reports process RSS at idle (159.6 MB).
+
+One defect was found by check 2 and fixed before the phase closed (see the fix
+entry below). Checks 3 and 4 initially appeared to fail because stale Vite servers
+pushed the frontend to port 3002, which `CORS_ORIGINS=http://localhost:3000` blocks;
+freeing port 3000 resolved it. Worth remembering: a frontend on an unexpected port
+looks exactly like an unreachable backend.
+
 ### Measured on the target laptop (2026-09-24)
 
 Baseline for the Phase 9 README and for judging later phases' cost. MacBook Air,
