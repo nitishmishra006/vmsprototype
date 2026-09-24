@@ -20,7 +20,13 @@ _engine: Engine | None = None
 _SessionLocal: sessionmaker[Session] | None = None
 
 
-def _ensure_sqlite_dir(url: str) -> None:
+def ensure_sqlite_dir(url: str) -> None:
+    """Create the parent directory of a SQLite file so the DB can be created.
+
+    Public because Alembic's env.py builds its own engine and must call this too:
+    on a fresh clone ``backend/data/`` does not exist yet and SQLite will not
+    create a missing directory (it fails with "unable to open database file").
+    """
     prefix = "sqlite:///"
     if url.startswith(prefix):
         raw = url[len(prefix) :]
@@ -31,7 +37,7 @@ def _ensure_sqlite_dir(url: str) -> None:
 def init_engine(database_url: str) -> Engine:
     """(Re)create the engine and session factory for ``database_url``."""
     global _engine, _SessionLocal
-    _ensure_sqlite_dir(database_url)
+    ensure_sqlite_dir(database_url)
     kwargs: dict[str, object] = {"future": True}
     if database_url.startswith("sqlite"):
         kwargs["connect_args"] = {"check_same_thread": False}

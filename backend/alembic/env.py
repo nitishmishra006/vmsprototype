@@ -10,13 +10,18 @@ from alembic import context
 from app.core.config import get_settings
 from app.db import models  # noqa: F401  (import registers every table on Base.metadata)
 from app.db.base import Base
+from app.db.session import ensure_sqlite_dir
 
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", get_settings().DATABASE_URL)
+database_url = get_settings().DATABASE_URL
+# Alembic builds its own engine, so it must create the SQLite directory itself —
+# `alembic upgrade head` on a fresh clone runs before the app has ever started.
+ensure_sqlite_dir(database_url)
+config.set_main_option("sqlalchemy.url", database_url)
 
 target_metadata = Base.metadata
 

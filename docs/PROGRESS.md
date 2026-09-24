@@ -77,7 +77,7 @@ rather than an unhandled rejection.
 
 ### Tests
 
-`pytest -q` → **83 passed in ~1.7 s**. `ruff check` and `ruff format --check` clean.
+`pytest -q` → **87 passed in ~1.8 s**. `ruff check` and `ruff format --check` clean.
 Coverage: config + overrides (persistence, reset, unknown/invalid keys), the DSL
 (valid plans incl. the SPEC §8 forklift example, and a failing case for every
 condition-parameter rule), `LocalStorageProvider` (round-trip, nested keys, missing
@@ -86,6 +86,24 @@ stubs, setup-status (endpoint shape plus each probe individually, with network a
 webcam mocked), the model registry (lazy load-once, status fields, unload,
 LOW_MEMORY_MODE eviction, idle reaping, failure recording) and device resolution,
 and the JSON log formatter (all SPEC §22 fields, no internals leaked).
+
+### Fix after the first acceptance run (2026-09-24)
+
+**`alembic upgrade head` failed on a fresh clone** with
+`sqlite3.OperationalError: unable to open database file`.
+
+Root cause: `init_engine()` creates the SQLite file's parent directory before
+connecting, but `alembic/env.py` builds its own engine via `engine_from_config`
+and bypassed that helper. On a fresh clone `backend/data/` does not exist yet and
+SQLite will not create a missing directory. The backend itself started fine,
+because `create_all()` at startup goes through `init_engine` — which masked the
+bug and meant only the documented setup sequence hit it.
+
+Fix: `_ensure_sqlite_dir` is now public `ensure_sqlite_dir`, and `alembic/env.py`
+calls it before setting the URL. `tests/unit/test_migrations.py` covers it —
+verified to fail with the original `OperationalError` when the call is removed,
+and the full `cp .env.example .env && alembic upgrade head` sequence was re-run
+against a clean tree with no `data/` directory.
 
 ### Dependencies added (CLAUDE.md rule #13)
 
