@@ -34,3 +34,8 @@ frontend/dist/
 .vscode/
 *.swp
 *.tsbuildinfo
+
+# --- ultralytics prediction output / downloaded samples ---
+runs/
+backend/runs/
+bus.jpg
