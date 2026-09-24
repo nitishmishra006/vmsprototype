@@ -1,0 +1,36 @@
+# --- python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- env / secrets ---
+.env
+backend/.env
+
+# --- data, models, evidence (never commit webcam footage) ---
+/data/*
+!/data/demo/
+/data/demo/*
+!/data/demo/.gitkeep
+*.pt
+*.onnx
+*_openvino_model/
+
+# --- node / frontend ---
+node_modules/
+dist/
+frontend/dist/
+*.local
+
+# --- editors / os ---
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.tsbuildinfo

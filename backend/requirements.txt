@@ -1,0 +1,31 @@
+# NOTE: torch and torchvision are NOT listed here on purpose.
+# Install the CPU build FIRST so ultralytics does not pull the large CUDA wheels:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# (If you have an NVIDIA GPU, install the CUDA build from pytorch.org instead.)
+
+# --- web / api ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.0
+python-multipart==0.0.20
+websockets==14.1
+
+# --- database ---
+SQLAlchemy==2.0.36
+alembic==1.14.0
+
+# --- http client (Ollama probe / parser) ---
+httpx==0.28.1
+
+# --- system metrics ---
+psutil==6.1.1
+
+# --- vision (Phase 1+; opencv is also used by the Phase 0 webcam probe) ---
+opencv-python==4.10.0.84
+numpy==2.2.1
+
+# --- dev / test ---
+pytest==8.3.4
+pytest-asyncio==0.25.0
+ruff==0.8.6
