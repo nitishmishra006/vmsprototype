@@ -105,6 +105,47 @@ verified to fail with the original `OperationalError` when the call is removed,
 and the full `cp .env.example .env && alembic upgrade head` sequence was re-run
 against a clean tree with no `data/` directory.
 
+### Measured on the target laptop (2026-09-24)
+
+Baseline for the Phase 9 README and for judging later phases' cost. MacBook Air,
+16 GB RAM, Apple Silicon, `DEVICE=auto` -> cpu (no CUDA), Python 3.11.
+
+| Measurement | Value |
+|---|---|
+| Backend RSS at idle | **159.6 MB** |
+| `pytest -q` (87 tests) | 1.09 s |
+| Webcam probe, index 0 | readable at **1920x1080** |
+| Free disk at Phase 0 | 8.8 GB |
+
+Idle RSS is ~75 MB higher than the same build measured in a Linux container
+(84.8 MB) because `opencv-python` + `numpy` are installed here and cv2 is imported
+by the webcam probe. That is the honest Phase 0 floor: roughly 160 MB before any
+model loads, against the SPEC §2 budget of 3.5 GB peak.
+
+Two things to watch before the heavy phases:
+
+- **Disk.** 8.8 GB free. The Part A downloads are ~3 GB (Grounding DINO tiny
+  ~700 MB, SmolVLM-500M ~1 GB, qwen2.5:1.5b ~1 GB, DINOv2-small ~90 MB, yolo11n
+  ~6 MB), and evidence accumulates on top at `EVIDENCE_RETENTION_DAYS=7`. Workable,
+  but not roomy.
+- **RAM headroom.** System RAM was 80-83% used during these checks (~3 GB free of
+  16 GB) with other apps open. Phase 7's VLM wants ~1.5-2 GB resident, so close
+  heavy apps before VLM testing, as BUILD_PROMPTS Part A advises.
+
+### Open question: which `data/` directory
+
+`DATA_DIR=./data` is spec-literal (SPEC §21), and the backend runs from `backend/`,
+so the database and all evidence land in `backend/data/` — confirmed by
+`/api/setup-status`, which reports storage at
+`/Users/nitishmishra/Documents/VMS/backend/data`. But BUILD_PROMPTS Part A puts
+demo clips in the repo-root `data/demo/`, which is what the Phase 2 seed script and
+the Phase 9 benchmark reference. That is two different `data` directories.
+
+Left spec-literal rather than changed unilaterally. Decide before Phase 2 (the
+first phase that writes evidence): either set `DATA_DIR=../data` in `backend/.env`
+so both point at the repo root, or keep `./data` and move demo clips under
+`backend/data/demo/`.
+
 ### Dependencies added (CLAUDE.md rule #13)
 
 | Dependency | Reason |
